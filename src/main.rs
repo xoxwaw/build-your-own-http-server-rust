@@ -1,54 +1,67 @@
-#[allow(unused_imports)]
-use std::net::TcpListener;
+use std::net::{TcpListener, TcpStream};
 use std::io::{Write, BufRead, BufReader};
+#[allow(unused_imports)]
+
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:4221").unwrap();
     
     for stream in listener.incoming() {
         match stream {
-            Ok(mut stream) => {
-                println!("accepted new connection");
-                
-                // Read the request line
-                let reader = BufReader::new(&stream);
-                let request_line = reader.lines().next().unwrap().unwrap();
-                
-                // Parse the path from the request line
-                let path = request_line.split_whitespace().nth(1).unwrap_or("/");
-                let endpoint = path.split("/").nth(1).unwrap_or("");
-                let echo_content = path.split("/").nth(2).unwrap_or("");
-                // Create response based on path
-                let (status_line, body) = if endpoint == "echo" {
-                    ("HTTP/1.1 200 OK", echo_content)
-                } else if path == "/" {
-                    ("HTTP/1.1 200 OK", "\r\n\r\n")
-                } else {
-                    ("HTTP/1.1 404 Not Found", "Not Found")
-                };
-                
-                // Write the response
-                let response = format!("{}\r\nContent-Length: {}\r\n\r\n{}", status_line, body.len(), body);
-                
-                // Write the response to the stream
-                
-                let response = format!(
-                    "{}\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
-                    status_line,
-                    body.len(),
-                    body
-                );
-                
-                if let Err(e) = stream.write_all(response.as_bytes()) {
-                    println!("Error writing to stream: {}", e);
-                }
-                if let Err(e) = stream.flush() {
-                    println!("Error flushing stream: {}", e);
-                }
+            Ok(mut _stream) => {
+                handle_client(_stream);
             }
             Err(e) => {
                 println!("error: {}", e);
             }
         }
     }
+}
+
+
+fn handle_client(mut stream: TcpStream) {
+    let buf_reader = BufReader::new(&stream);
+    let lines = &mut buf_reader.lines();
+    let request_line = lines.next().unwrap().unwrap();
+
+    let resp_200 = "HTTP/1.1 200 OK\r\n\r\n";
+    let resp_404 = "HTTP/1.1 404 Not Found\r\n\r\n";
+
+    let uri = request_line.split_whitespace().nth(1).unwrap_or("/");
+    let status_line = if uri == "/" {
+        resp_200
+    }else if uri.starts_with("/echo") {
+        resp_200
+    }else {
+        resp_404
+    };
+
+    let mut user_agent = String::new();
+    for line in lines {
+        let line_ = line.unwrap();
+        let l = &line_;
+        if l.is_empty() {
+            break;
+        }
+        if l.starts_with("User-Agent") {
+            user_agent = l.split_once(": ").unwrap_or(("", "")).1.to_string();
+        }
+    }
+
+    let request_uri: &str = request_line.split_whitespace().nth(1).unwrap();
+    let body = if request_uri.starts_with("/echo") {
+        request_uri.split("/").nth(2).unwrap_or("").to_string()
+    }else if request_uri.starts_with("/user-agent") {
+        user_agent.clone()
+    }else {
+        String::new()
+    };
+    
+    let response = format!(
+        "{status_line}\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{user_agent}",
+        len=body.len(),
+        user_agent=body.clone()
+    );
+    stream.write_all(response.as_bytes()).unwrap();
+        
 }
