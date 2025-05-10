@@ -32,6 +32,8 @@ fn handle_client(mut stream: TcpStream) {
         resp_200
     }else if uri.starts_with("/echo") {
         resp_200
+    }else if uri.starts_with("/user-agent") {
+        resp_200
     }else {
         resp_404
     };
