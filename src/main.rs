@@ -21,6 +21,8 @@ fn main() {
                 // Create response based on path
                 let (status_line, body) = if endpoint == "echo" {
                     ("HTTP/1.1 200 OK", echo_content)
+                } else if path == "/" {
+                    ("HTTP/1.1 200 OK", "\r\n\r\n")
                 } else {
                     ("HTTP/1.1 404 Not Found", "Not Found")
                 };
