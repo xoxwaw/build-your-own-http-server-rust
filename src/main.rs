@@ -16,9 +16,12 @@ fn main() {
                 
                 // Parse the path from the request line
                 let path = request_line.split_whitespace().nth(1).unwrap_or("/");
-                
+                let endpoint = path.split("/").nth(1).unwrap_or("");
+                let echo_content = path.split("/").nth(2).unwrap_or("");
                 // Create response based on path
-                let (status_line, body) = if path == "/" {
+                let (status_line, body) = if endpoint == "echo" {
+                    ("HTTP/1.1 200 OK", echo_content)
+                } else if path == "/" {
                     ("HTTP/1.1 200 OK", "\r\n\r\n")
                 } else {
                     ("HTTP/1.1 404 Not Found", "Not Found")
