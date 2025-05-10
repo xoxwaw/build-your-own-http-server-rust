@@ -1,23 +1,36 @@
 #[allow(unused_imports)]
 use std::net::TcpListener;
-use std::io::Write;
-fn main() {
+use std::io::{Write, BufRead, BufReader};
 
-    // Uncomment this block to pass the first stage
-    
+fn main() {
     let listener = TcpListener::bind("127.0.0.1:4221").unwrap();
     
     for stream in listener.incoming() {
         match stream {
             Ok(mut stream) => {
                 println!("accepted new connection");
-                let body = "Hello, World!";
+                
+                // Read the request line
+                let reader = BufReader::new(&stream);
+                let request_line = reader.lines().next().unwrap().unwrap();
+                
+                // Parse the path from the request line
+                let path = request_line.split_whitespace().nth(1).unwrap_or("/");
+                
+                // Create response based on path
+                let (status_line, body) = if path == "/" {
+                    ("HTTP/1.1 200 OK", "\r\n\r\n")
+                } else {
+                    ("HTTP/1.1 404 Not Found", "Not Found")
+                };
+                
                 let response = format!(
-                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
+                    "{}\r\nContent-Length: {}\r\n\r\n{}",
+                    status_line,
                     body.len(),
                     body
                 );
-                std::thread::sleep(std::time::Duration::from_secs(2));
+                
                 if let Err(e) = stream.write_all(response.as_bytes()) {
                     println!("Error writing to stream: {}", e);
                 }
