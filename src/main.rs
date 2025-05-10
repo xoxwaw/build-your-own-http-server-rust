@@ -21,11 +21,14 @@ fn main() {
                 // Create response based on path
                 let (status_line, body) = if endpoint == "echo" {
                     ("HTTP/1.1 200 OK", echo_content)
-                } else if path == "/" {
-                    ("HTTP/1.1 200 OK", "\r\n\r\n")
                 } else {
                     ("HTTP/1.1 404 Not Found", "Not Found")
                 };
+                
+                // Write the response
+                let response = format!("{}\r\nContent-Length: {}\r\n\r\n{}", status_line, body.len(), body);
+                
+                // Write the response to the stream
                 
                 let response = format!(
                     "{}\r\nContent-Length: {}\r\n\r\n{}",
