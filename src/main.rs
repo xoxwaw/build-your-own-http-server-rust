@@ -24,8 +24,8 @@ fn handle_client(mut stream: TcpStream) {
     let lines = &mut buf_reader.lines();
     let request_line = lines.next().unwrap().unwrap();
 
-    let resp_200 = "HTTP/1.1 200 OK\r\n\r\n";
-    let resp_404 = "HTTP/1.1 404 Not Found\r\n\r\n";
+    let resp_200 = "HTTP/1.1 200 OK";
+    let resp_404 = "HTTP/1.1 404 Not Found";
 
     let uri = request_line.split_whitespace().nth(1).unwrap_or("/");
     let status_line = if uri == "/" {
