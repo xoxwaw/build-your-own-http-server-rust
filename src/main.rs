@@ -26,12 +26,12 @@ fn main() {
                 };
                 
                 // Write the response
-                let response = format!("{}\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", status_line, body.len(), body);
+                let response = format!("{}\r\nContent-Length: {}\r\n\r\n{}", status_line, body.len(), body);
                 
                 // Write the response to the stream
                 
                 let response = format!(
-                    "{}\r\nContent-Length: {}\r\n\r\n{}",
+                    "{}\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
                     status_line,
                     body.len(),
                     body
