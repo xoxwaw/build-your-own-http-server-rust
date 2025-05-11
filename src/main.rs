@@ -29,19 +29,24 @@ fn handle_client(mut stream: TcpStream) {
 
     let resp_200 = "HTTP/1.1 200 OK";
     let resp_404 = "HTTP/1.1 404 Not Found";
+    let mut content_type = "text/plain".to_string();
 
     let uri = request_line.split_whitespace().nth(1).unwrap_or("/");
-    let status_line = if uri == "/" {
+    let mut status_line = if uri == "/" {
         resp_200
     }else if uri.starts_with("/echo") {
         resp_200
+    }else if uri.starts_with("/files") {
+        content_type = "application/octet-stream".to_string();
+        resp_200
     }else if uri.starts_with("/user-agent") {
         resp_200
-    }else {
+    } else {
         resp_404
     };
 
     let mut user_agent = String::new();
+    
     for line in lines {
         let line_ = line.unwrap();
         let l = &line_;
@@ -58,6 +63,15 @@ fn handle_client(mut stream: TcpStream) {
         request_uri.split("/").nth(2).unwrap_or("").to_string()
     }else if request_uri.starts_with("/user-agent") {
         user_agent.clone()
+    }else if request_uri.starts_with("/files"){
+        let file_path = request_uri.split("/").nth(2).unwrap_or("");
+        if let Ok(content) = std::fs::read_to_string(file_path) {
+            status_line = resp_200;
+            content
+        } else {
+            status_line = resp_404;
+            "File not found".to_string()
+        }
     }else {
         String::new()
     };
