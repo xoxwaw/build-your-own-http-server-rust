@@ -65,7 +65,7 @@ fn handle_client(mut stream: TcpStream) {
         user_agent.clone()
     }else if request_uri.starts_with("/files"){
         let file_path = request_uri.split("/").nth(2).unwrap_or("");
-        if let Ok(content) = std::fs::read_to_string(file_path) {
+        if let Ok(content) = std::fs::read_to_string(format!("/tmp/{}", file_path)) {
             status_line = resp_200;
             content
         } else {
@@ -77,7 +77,9 @@ fn handle_client(mut stream: TcpStream) {
     };
     
     let response = format!(
-        "{status_line}\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{user_agent}",
+        "{status_line}\r\nContent-Type: {content_type}\r\nContent-Length: {len}\r\n\r\n{user_agent}",
+        status_line=status_line,
+        content_type=content_type,
         len=body.len(),
         user_agent=body.clone()
     );
