@@ -41,6 +41,8 @@ fn handle_client(mut stream: TcpStream, directory: String) {
     let request_parts: Vec<&str> = request_line.split_whitespace().collect();
     let method = request_parts[0];
     let uri = request_parts[1];
+    println!("method: {}", method);
+    println!("uri: {}", uri);
 
     let resp_200 = "HTTP/1.1 200 OK";
     let resp_404 = "HTTP/1.1 404 Not Found";
@@ -50,7 +52,7 @@ fn handle_client(mut stream: TcpStream, directory: String) {
         resp_200
     }else if uri.starts_with("/echo") {
         resp_200
-    }else if uri.starts_with("/files") {
+    }else if uri.starts_with("/files") && method == "GET" {
         content_type = "application/octet-stream".to_string();
         resp_200
     }else if uri.starts_with("/user-agent") {
@@ -116,6 +118,7 @@ fn handle_client(mut stream: TcpStream, directory: String) {
         if !file_path.is_empty() {
             if let Ok(_content) = std::fs::write(format!("{}{}", directory, file_path), body) {
                 println!("File created: {}", file_path);
+                println!("status_line: {}", status_line);
                 String::new()
             } else {
                 println!("Failed to create file: {}", file_path);
