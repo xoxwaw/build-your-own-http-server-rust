@@ -1,5 +1,6 @@
 use std::net::{TcpListener, TcpStream};
 use std::io::{Write, BufRead, BufReader};
+use std::thread;
 #[allow(unused_imports)]
 
 
@@ -9,7 +10,9 @@ fn main() {
     for stream in listener.incoming() {
         match stream {
             Ok(mut _stream) => {
-                handle_client(_stream);
+                thread::spawn(move || {
+                    handle_client(_stream);
+                });
             }
             Err(e) => {
                 println!("error: {}", e);
