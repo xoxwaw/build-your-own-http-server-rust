@@ -6,12 +6,22 @@ use std::thread;
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:4221").unwrap();
-    
+    let args: Vec<String> = std::env::args().collect();
+    let mut directory = "/tmp/".to_string();
+
+    for i in 0..args.len() {
+        if args[i] == "--directory" && i + 1 < args.len() {
+            directory = args[i + 1].clone();
+            break;
+        }
+    }
+
     for stream in listener.incoming() {
         match stream {
             Ok(mut _stream) => {
+                let dir_clone = directory.clone();
                 thread::spawn(move || {
-                    handle_client(_stream);
+                    handle_client(_stream, dir_clone);
                 });
             }
             Err(e) => {
@@ -22,7 +32,7 @@ fn main() {
 }
 
 
-fn handle_client(mut stream: TcpStream) {
+fn handle_client(mut stream: TcpStream, directory: String) {
     let buf_reader = BufReader::new(&stream);
     let lines = &mut buf_reader.lines();
     let request_line = lines.next().unwrap().unwrap();
@@ -65,7 +75,7 @@ fn handle_client(mut stream: TcpStream) {
         user_agent.clone()
     }else if request_uri.starts_with("/files"){
         let file_path = request_uri.split("/").nth(2).unwrap_or("");
-        if let Ok(content) = std::fs::read_to_string(format!("/tmp/{}", file_path)) {
+        if let Ok(content) = std::fs::read_to_string(format!("{}{}", directory, file_path)) {
             status_line = resp_200;
             content
         } else {
