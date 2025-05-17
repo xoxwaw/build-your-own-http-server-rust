@@ -81,7 +81,7 @@ fn handle_client(mut stream: TcpStream, directory: String) {
 
         let mut user_agent = String::new();
         let mut headers = Vec::new();
-        let mut keep_alive = false;
+        let mut keep_alive = request_parts.len() > 2 && request_parts[2].contains("1.1");
 
         loop {
             let mut line = String::new();
@@ -95,8 +95,6 @@ fn handle_client(mut stream: TcpStream, directory: String) {
 
             if l.to_lowercase().starts_with("connection") {
                 let connection_value = l.split_once(": ").unwrap_or(("", "")).1.to_string();
-                keep_alive = connection_value.contains("keep-alive");
-
                 if connection_value.contains("close") {
                     keep_alive = false;
                 }
@@ -169,6 +167,7 @@ fn handle_client(mut stream: TcpStream, directory: String) {
         } else {
             "Connection: close\r\n"
         };
+        println!("keep_alive: {}, sending header: {}", keep_alive, connection_header);
         
         let response = format!(
             "{status_line}\r\nContent-Type: {content_type}\r\n{connection}Content-Length: {len}\r\n\r\n{user_agent}",
