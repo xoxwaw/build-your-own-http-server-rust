@@ -52,6 +52,9 @@ fn handle_client(mut stream: TcpStream, directory: String) {
 
 
         let request_parts: Vec<&str> = request_line.split_whitespace().collect();
+        if request_parts.len() < 2 {
+            break;
+        }
         let method = request_parts[0];
         let uri = request_parts[1];
         println!("method: {}", method);
@@ -89,6 +92,11 @@ fn handle_client(mut stream: TcpStream, directory: String) {
             }
             headers.push(l.clone());
             println!("line: {}", l);
+
+            if l.to_lowercase().starts_with("connection") {
+                let connection_value = l.split_once(": ").unwrap_or(("", "")).1.to_string();
+                keep_alive = connection_value.to_lowercase() == "keep-alive";
+            }
             if l.starts_with("User-Agent") {
                 user_agent = l.split_once(": ").unwrap_or(("", "")).1.to_string();
             }
