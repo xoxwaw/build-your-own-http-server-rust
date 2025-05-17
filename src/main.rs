@@ -162,9 +162,10 @@ fn handle_client(mut stream: TcpStream, directory: String) {
         };
         
         let response = format!(
-            "{status_line}\r\nContent-Type: {content_type}\r\nContent-Length: {len}\r\n\r\n{user_agent}",
+            "{status_line}\r\nContent-Type: {content_type}\r\n{connection}Content-Length: {len}\r\n\r\n{user_agent}",
             status_line=status_line,
             content_type=content_type,
+            connection=connection_header,
             len=body.len(),
             user_agent=body.clone()
         );
