@@ -1,38 +1,65 @@
-[![progress-banner](https://backend.codecrafters.io/progress/http-server/b5f7a7da-e14c-475f-b90f-61f83f6ef433)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Rust HTTP Server Implementation
 
-This is a starting point for Rust solutions to the
-["Build Your Own HTTP server" Challenge](https://app.codecrafters.io/courses/http-server/overview).
+This project is a from-scratch implementation of an HTTP/1.1 server in Rust. It demonstrates how to build low-level networking applications while learning Rust's powerful features for systems programming.
 
-[HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) is the
-protocol that powers the web. In this challenge, you'll build a HTTP/1.1 server
-that is capable of serving multiple clients.
+## What I've Built
 
-Along the way you'll learn about TCP servers,
-[HTTP request syntax](https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html),
-and more.
+A fully functional HTTP/1.1 server that:
+- Handles concurrent client connections using Rust's threading model
+- Supports persistent connections (keep-alive)
+- Implements proper HTTP response generation
+- Serves static files from a directory
+- Processes different HTTP methods (GET, POST)
+- Handles request routing and URI parsing
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## Why Rust for Low-Level Projects
 
-# Passing the first stage
+Rust is an ideal language for building systems-level applications:
+- Memory safety without garbage collection
+- Thread safety through ownership and borrowing
+- Zero-cost abstractions for high performance
+- Expressive type system that prevents entire classes of bugs
 
-The entry point for your HTTP server implementation is in `src/main.rs`. Study
-and uncomment the relevant code, and push your changes to pass the first stage:
+This HTTP server showcases these strengths by handling concurrent connections with memory safety guarantees that would be difficult to ensure in languages like C or C++.
+
+## Running the Server
 
 ```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
+# Clone the repository
+git clone <repository-url>
+cd rust-http-server
+
+# Run the server (serves files from /tmp by default)
+cargo run
+
+# Specify a custom directory
+cargo run -- --directory /path/to/files
 ```
 
-Time to move on to the next stage!
+## Testing the Server
 
-# Stage 2 & beyond
+You can interact with the server using standard HTTP tools:
 
-Note: This section is for stages 2 and beyond.
+```sh
+# Make a basic request
+curl -v http://localhost:4221/echo/hello
 
-1. Ensure you have `cargo (1.85)` installed locally
-1. Run `./your_program.sh` to run your program, which is implemented in
-   `src/main.rs`. This command compiles your Rust project, so it might be slow
-   the first time you run it. Subsequent runs will be fast.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+# Make multiple requests over a single connection
+curl --http1.1 -v http://localhost:4221/echo/one http://localhost:4221/echo/two
+
+# Upload a file
+curl -X POST -d "content" http://localhost:4221/files/example.txt
+```
+
+## What I Learned
+
+Building this project deepened my understanding of:
+- TCP socket programming
+- HTTP protocol details and implementation
+- Rust's concurrency model
+- Ownership and borrowing in thread contexts
+- Error handling in network applications
+- Proper resource management for server applications
+
+
+
