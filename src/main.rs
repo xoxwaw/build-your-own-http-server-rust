@@ -95,7 +95,16 @@ fn handle_client(mut stream: TcpStream, directory: String) {
 
             if l.to_lowercase().starts_with("connection") {
                 let connection_value = l.split_once(": ").unwrap_or(("", "")).1.to_string();
-                keep_alive = connection_value.to_lowercase() == "keep-alive";
+                keep_alive = connection_value.contains("keep-alive");
+
+                if connection_value.contains("close") {
+                    keep_alive = false;
+                }
+            }
+            if !headers.iter().any(|h| h.to_lowercase().starts_with("connection")) {
+                if request_parts.len() > 2  && request_parts[2].contains("keep-alive") {
+                    keep_alive = true;
+                }
             }
             if l.starts_with("User-Agent") {
                 user_agent = l.split_once(": ").unwrap_or(("", "")).1.to_string();
@@ -173,9 +182,10 @@ fn handle_client(mut stream: TcpStream, directory: String) {
             break;
         }
 
+        stream.flush().unwrap_or(());
+
         if !keep_alive {
             break;
         }
-        buf_reader = BufReader::new(&stream);
     }
 }
